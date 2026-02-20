@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Phases MCP - Structured AI Development</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-dark: #09090b;
+            --bg-panel: rgba(24, 24, 27, 0.7);
+            --text-primary: #f8fafc;
+            --text-secondary: #a1a1aa;
+            --accent: #3b82f6;
+            --accent-glow: rgba(59, 130, 246, 0.5);
+            --border: rgba(255, 255, 255, 0.1);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-dark);
+            color: var(--text-primary);
+            line-height: 1.6;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        /* Background glow effect */
+        .bg-glow {
+            position: absolute;
+            top: -20%;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 800px;
+            height: 600px;
+            background: radial-gradient(circle, var(--accent-glow) 0%, rgba(9, 9, 11, 0) 70%);
+            filter: blur(80px);
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 4rem 2rem;
+            width: 100%;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 5rem;
+            animation: fadeInDown 0.8s ease-out;
+        }
+
+        .badge {
+            display: inline-block;
+            background: rgba(59, 130, 246, 0.1);
+            color: #60a5fa;
+            padding: 0.5rem 1rem;
+            border-radius: 999px;
+            font-size: 0.875rem;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+            border: 1px solid rgba(59, 130, 246, 0.2);
+        }
+
+        h1 {
+            font-size: 4.5rem;
+            font-weight: 800;
+            letter-spacing: -0.05em;
+            line-height: 1.1;
+            margin-bottom: 1.5rem;
+            background: linear-gradient(to right, #ffffff, #a1a1aa);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        p.subtitle {
+            font-size: 1.25rem;
+            color: var(--text-secondary);
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .installation-section {
+            background: var(--bg-panel);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 3rem;
+            margin-bottom: 3rem;
+            animation: fadeInUp 0.8s ease-out 0.2s both;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+        }
+
+        .installation-section h2 {
+            font-size: 1.8rem;
+            margin-bottom: 2rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .installation-section h2 span {
+            background: var(--text-primary);
+            color: var(--bg-dark);
+            width: 32px;
+            height: 32px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            font-size: 1.2rem;
+        }
+
+        .code-window {
+            background: #18181b;
+            border-radius: 12px;
+            border: 1px solid #27272a;
+            overflow: hidden;
+            margin-bottom: 2rem;
+        }
+
+        .code-header {
+            background: #27272a;
+            padding: 0.75rem 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            border-bottom: 1px solid #3f3f46;
+        }
+
+        .code-dots {
+            display: flex;
+            gap: 6px;
+        }
+
+        .dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+
+        .dot.r {
+            background: #ef4444;
+        }
+
+        .dot.y {
+            background: #eab308;
+        }
+
+        .dot.g {
+            background: #22c55e;
+        }
+
+        .code-body {
+            padding: 1.5rem;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.95rem;
+            line-height: 1.5;
+            overflow-x: auto;
+        }
+
+        .keyword {
+            color: #f472b6;
+        }
+
+        .string {
+            color: #34d399;
+        }
+
+        .comment {
+            color: #71717a;
+        }
+
+        .command {
+            color: #60a5fa;
+        }
+
+        .steps {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+        }
+
+        @media (max-width: 768px) {
+            .steps {
+                grid-template-columns: 1fr;
+            }
+
+            h1 {
+                font-size: 3rem;
+            }
+        }
+
+        .step-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--border);
+            padding: 2rem;
+            border-radius: 16px;
+            transition: transform 0.3s ease, background 0.3s ease;
+        }
+
+        .step-card:hover {
+            transform: translateY(-5px);
+            background: rgba(255, 255, 255, 0.05);
+            border-color: rgba(59, 130, 246, 0.3);
+        }
+
+        .step-card h3 {
+            margin-bottom: 1rem;
+            color: #e4e4e7;
+        }
+
+        .github-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: #fff;
+            color: #000;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            margin-top: 2rem;
+            transition: opacity 0.2s;
+        }
+
+        .github-link:hover {
+            opacity: 0.9;
+        }
+
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="bg-glow"></div>
+    <div class="container">
+        <header>
+            <div class="badge">v1.0.0 Now Available</div>
+            <h1>Stop vibecoding.<br>Start shipping.</h1>
+            <p class="subtitle">Phases turns your AI coding assistant into a structured development partner. Define
+                specs, plan in phases, execute with atomic commits, and verify with real evidence.</p>
+            <a href="https://github.com/tankuday21/phases-mcp" target="_blank" class="github-link">
+                <svg height="24" width="24" viewBox="0 0 16 16" fill="currentColor">
+                    <path fill-rule="evenodd"
+                        d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z">
+                    </path>
+                </svg>
+                View on GitHub
+            </a>
+        </header>
+
+        <section class="installation-section">
+            <h2><span>1</span> Install Globally via npm</h2>
+            <p style="color: var(--text-secondary); margin-bottom: 1.5rem;">Install the Phases MCP Server package
+                globally onto your machine.</p>
+
+            <div class="code-window">
+                <div class="code-header">
+                    <div class="code-dots">
+                        <div class="dot r"></div>
+                        <div class="dot y"></div>
+                        <div class="dot g"></div>
+                    </div>
+                    Terminal
+                </div>
+                <div class="code-body">
+                    <span class="comment"># Using npm</span><br>
+                    <span class="command">npm</span> install -g phases-mcp-server<br><br>
+                </div>
+            </div>
+        </section>
+
+        <section class="installation-section" style="animation-delay: 0.4s;">
+            <h2><span>2</span> Configure MCP Client</h2>
+            <p style="color: var(--text-secondary); margin-bottom: 1.5rem;">Add Phases to your MCP client configuration
+                (e.g., Claude Desktop, Cursor, Antigravity).</p>
+
+            <div class="code-window">
+                <div class="code-header">
+                    <div class="code-dots">
+                        <div class="dot r"></div>
+                        <div class="dot y"></div>
+                        <div class="dot g"></div>
+                    </div>
+                    mcp_config.json
+                </div>
+                <div class="code-body">
+                    {<br>
+                    &nbsp;&nbsp;<span class="string">"mcpServers"</span>: {<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;<span class="string">"phases"</span>: {<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="string">"command"</span>: <span
+                        class="string">"phases-mcp-server"</span>,<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="string">"transportType"</span>: <span
+                        class="string">"stdio"</span><br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;}<br>
+                    &nbsp;&nbsp;}<br>
+                    }
+                </div>
+            </div>
+        </section>
+
+        <div class="steps">
+            <div class="step-card">
+                <h3>🔄 The Workflow</h3>
+                <p style="color: var(--text-secondary); margin-bottom: 1rem;">Once installed, restart your client to
+                    access all 16 tools. Follow this cycle:</p>
+                <ul style="color: #e4e4e7; list-style-position: inside;">
+                    <li><code style="color: #60a5fa;">phases_init</code> (Spec & Roadmap)</li>
+                    <li><code style="color: #60a5fa;">phases_plan</code> (Create discrete tasks)</li>
+                    <li><code style="color: #60a5fa;">phases_execute</code> (Code & Commit)</li>
+                    <li><code style="color: #60a5fa;">phases_verify</code> (Validate & Ship)</li>
+                </ul>
+            </div>
+
+            <div class="step-card">
+                <h3>🛠 Need to build from source?</h3>
+                <p style="color: var(--text-secondary); margin-bottom: 1rem;">Clone the repository directly instead:</p>
+                <div class="code-window" style="margin-bottom: 0;">
+                    <div class="code-body" style="padding: 1rem; font-size: 0.85rem;">
+                        <span class="command">git</span> clone https://github.com/tankuday21/phases-mcp<br>
+                        <span class="command">cd</span> phases-mcp<br>
+                        <span class="command">npm</span> install && <span class="command">npm</span> run build
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>
