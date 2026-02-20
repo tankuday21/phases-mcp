@@ -1,0 +1,237 @@
+// ─── GSD Template: SPEC.md ─────────────────────────────────────
+
+export function generateSpec(opts: {
+    projectName: string;
+    vision: string;
+    goals: string[];
+    nonGoals: string[];
+    users: string;
+    constraints: string[];
+    successCriteria: string[];
+}): string {
+    return `# SPEC.md — Project Specification
+
+> **Status**: \`FINALIZED\`
+
+## Vision
+${opts.vision}
+
+## Goals
+${opts.goals.map((g, i) => `${i + 1}. ${g}`).join('\n')}
+
+## Non-Goals (Out of Scope)
+${opts.nonGoals.map(n => `- ${n}`).join('\n')}
+
+## Users
+${opts.users}
+
+## Constraints
+${opts.constraints.map(c => `- ${c}`).join('\n')}
+
+## Success Criteria
+${opts.successCriteria.map(s => `- [ ] ${s}`).join('\n')}
+`;
+}
+
+// ─── GSD Template: ROADMAP.md ──────────────────────────────────
+
+export function generateRoadmap(opts: {
+    milestone: string;
+    mustHaves: string[];
+    phases: Array<{ name: string; objective: string }>;
+}): string {
+    const phasesStr = opts.phases
+        .map(
+            (p, i) => `### Phase ${i + 1}: ${p.name}
+**Status**: ⬜ Not Started
+**Objective**: ${p.objective}`
+        )
+        .join('\n\n');
+
+    return `# ROADMAP.md
+
+> **Current Phase**: Not started
+> **Milestone**: ${opts.milestone}
+
+## Must-Haves (from SPEC)
+${opts.mustHaves.map(m => `- [ ] ${m}`).join('\n')}
+
+## Phases
+
+${phasesStr}
+`;
+}
+
+// ─── GSD Template: STATE.md ────────────────────────────────────
+
+export function generateState(): string {
+    return `# STATE.md — Project Memory
+
+> **Last Updated**: ${new Date().toISOString()}
+
+## Current Position
+- **Phase**: None
+- **Task**: None
+- **Status**: Initialized
+- **Debug Strikes**: 0
+
+## Blockers
+None
+
+## Last Session Summary
+Project initialized. Ready for planning.
+`;
+}
+
+// ─── GSD Template: DECISIONS.md ────────────────────────────────
+
+export function generateDecisions(): string {
+    return `# DECISIONS.md — Architecture Decision Records
+
+> Log of all significant technical decisions.
+
+## Decisions
+
+_No decisions yet. Decisions will be logged during planning and execution._
+`;
+}
+
+// ─── GSD Template: JOURNAL.md ──────────────────────────────────
+
+export function generateJournal(): string {
+    return `# JOURNAL.md — Session Log
+
+> Chronological log of sessions and major events.
+
+## Sessions
+
+### ${new Date().toISOString().split('T')[0]}
+- Project initialized with GSD MCP
+`;
+}
+
+// ─── GSD Template: TODO.md ─────────────────────────────────────
+
+export function generateTodo(): string {
+    return `# TODO.md — Quick Capture
+
+> Ideas, notes, and tasks captured during development.
+
+## Pending
+_No items yet._
+
+## Completed
+_Nothing completed yet._
+`;
+}
+
+// ─── GSD Template: PLAN.md ─────────────────────────────────────
+
+export function generatePlan(opts: {
+    phase: number;
+    planNumber: number;
+    wave: number;
+    planName: string;
+    objective: string;
+    contextFiles: string[];
+    tasks: Array<{
+        name: string;
+        files: string[];
+        action: string;
+        verify: string;
+        done: string;
+        type?: string;
+    }>;
+    successCriteria: string[];
+}): string {
+    const tasksStr = opts.tasks
+        .map(
+            t => `<task type="${t.type || 'auto'}">
+  <name>${t.name}</name>
+  <files>${t.files.join(', ')}</files>
+  <action>
+    ${t.action}
+  </action>
+  <verify>${t.verify}</verify>
+  <done>${t.done}</done>
+</task>`
+        )
+        .join('\n\n');
+
+    return `---
+phase: ${opts.phase}
+plan: ${opts.planNumber}
+wave: ${opts.wave}
+---
+
+# Plan ${opts.phase}.${opts.planNumber}: ${opts.planName}
+
+## Objective
+${opts.objective}
+
+## Context
+${opts.contextFiles.map(f => `- ${f}`).join('\n')}
+
+## Tasks
+
+${tasksStr}
+
+## Success Criteria
+${opts.successCriteria.map(s => `- [ ] ${s}`).join('\n')}
+`;
+}
+
+// ─── GSD Template: VERIFICATION.md ─────────────────────────────
+
+export function generateVerification(opts: {
+    phase: number;
+    mustHaves: Array<{ description: string; passed: boolean; evidence: string }>;
+    verdict: 'PASS' | 'FAIL';
+}): string {
+    const mustHavesStr = opts.mustHaves
+        .map(
+            m =>
+                `- [${m.passed ? 'x' : ' '}] ${m.description} — ${m.passed ? 'VERIFIED' : 'FAILED'} (${m.evidence})`
+        )
+        .join('\n');
+
+    return `## Phase ${opts.phase} Verification
+
+### Must-Haves
+${mustHavesStr}
+
+### Verdict: ${opts.verdict}
+`;
+}
+
+// ─── GSD Template: ARCHITECTURE.md ─────────────────────────────
+
+export function generateArchitecture(opts: {
+    projectName: string;
+    overview: string;
+    components: Array<{ name: string; description: string; files: string[] }>;
+    techStack: string[];
+}): string {
+    const componentsStr = opts.components
+        .map(
+            c => `### ${c.name}
+${c.description}
+**Files:** ${c.files.join(', ')}`
+        )
+        .join('\n\n');
+
+    return `# ARCHITECTURE.md — System Design
+
+> Generated by \`gsd_map\`
+
+## Overview
+${opts.overview}
+
+## Components
+
+${componentsStr}
+
+## Tech Stack
+${opts.techStack.map(t => `- ${t}`).join('\n')}
+`;
+}
