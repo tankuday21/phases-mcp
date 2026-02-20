@@ -26,7 +26,11 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": ""
+    "url": "git+https://github.com/tankuday21/phases-mcp.git"
+  },
+  "homepage": "https://github.com/tankuday21/phases-mcp#readme",
+  "bugs": {
+    "url": "https://github.com/tankuday21/phases-mcp/issues"
   },
   "files": [
     "dist/**/*",
