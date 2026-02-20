@@ -1,5 +1,5 @@
 {
-  "name": "phases-mcp",
+  "name": "phases-mcp-server",
   "version": "1.0.0",
   "description": "Phases — A spec-driven, context-engineered development methodology MCP server",
   "type": "module",
