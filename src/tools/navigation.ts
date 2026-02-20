@@ -17,7 +17,7 @@ export function handleProgress(
     }
 
     if (!fileManager.isGsdInitialized()) {
-        return { success: false, message: '❌ No GSD project found. Run gsd_init first.' };
+        return { success: false, message: '❌ No Phases project found. Run phases_init first.' };
     }
 
     const state = stateManager.getCurrentState();
@@ -53,13 +53,13 @@ export function handleProgress(
     // Determine recommended action
     let nextAction = '';
     if (!fileManager.isSpecFinalized()) {
-        nextAction = 'Complete gsd_init first';
+        nextAction = 'Complete phases_init first';
     } else if (state.phase === null || notStarted === total) {
-        nextAction = 'Use gsd_plan with phase 1 to begin';
+        nextAction = 'Use phases_plan with phase 1 to begin';
     } else if (state.status.includes('Ready for execution')) {
-        nextAction = `Use gsd_execute with phase ${state.phase}`;
+        nextAction = `Use phases_execute with phase ${state.phase}`;
     } else if (state.status.includes('fully executed')) {
-        nextAction = `Use gsd_verify with phase ${state.phase}`;
+        nextAction = `Use phases_verify with phase ${state.phase}`;
     } else if (state.status.includes('verification: FAIL')) {
         nextAction = `Fix gaps and re-execute phase ${state.phase}`;
     } else if (completed === total) {
@@ -71,7 +71,7 @@ export function handleProgress(
     return {
         success: true,
         message: `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- GSD ► PROGRESS
+ PHASES ► PROGRESS
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 Project: ${projectName}
@@ -113,7 +113,7 @@ export function handlePause(
     }
 
     if (!fileManager.isGsdInitialized()) {
-        return { success: false, message: '❌ No GSD project found.' };
+        return { success: false, message: '❌ No Phases project found.' };
     }
 
     const sessionData = stateManager.saveSession(input.summary);
@@ -129,19 +129,19 @@ ${input.summary}
     return {
         success: true,
         message: `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- GSD ► SESSION PAUSED ⏸️
+ PHASES ► SESSION PAUSED ⏸️
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 Summary: ${input.summary}
 State saved to .gsd/STATE.md
 
 ───────────────────────────────────────
-▶ Use gsd_resume in your next session
+▶ Use phases_resume in your next session
 ───────────────────────────────────────`,
     };
 }
 
-// ─── gsd_resume ────────────────────────────────────────────────
+// ─── phases_resume ────────────────────────────────────────────────
 
 export interface ResumeInput {
     working_directory?: string;
@@ -157,7 +157,7 @@ export function handleResume(
     }
 
     if (!fileManager.isGsdInitialized()) {
-        return { success: false, message: '❌ No GSD project found.' };
+        return { success: false, message: '❌ No Phases project found.' };
     }
 
     const result = stateManager.restoreSession();
@@ -170,7 +170,7 @@ export function handleResume(
     return {
         success: result.success,
         message: `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- GSD ► SESSION RESUMED ▶️
+ PHASES ► SESSION RESUMED ▶️
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 Phase: ${state.phase ?? 'None'}

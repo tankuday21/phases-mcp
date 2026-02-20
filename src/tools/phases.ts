@@ -19,7 +19,7 @@ export function handleAddPhase(
     }
 
     if (!fileManager.isGsdInitialized()) {
-        return { success: false, message: '❌ No GSD project found.' };
+        return { success: false, message: '❌ No Phases project found.' };
     }
 
     const phases = fileManager.parseRoadmapPhases();
@@ -60,7 +60,7 @@ export function handleRemovePhase(
     }
 
     if (!fileManager.isGsdInitialized()) {
-        return { success: false, message: '❌ No GSD project found.' };
+        return { success: false, message: '❌ No Phases project found.' };
     }
 
     const phases = fileManager.parseRoadmapPhases();
@@ -114,7 +114,7 @@ export function handleDiscussPhase(
     }
 
     if (!fileManager.isGsdInitialized()) {
-        return { success: false, message: '❌ No GSD project found.' };
+        return { success: false, message: '❌ No Phases project found.' };
     }
 
     const phases = fileManager.parseRoadmapPhases();
@@ -147,7 +147,7 @@ export function handleDiscussPhase(
     return {
         success: true,
         message: `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- GSD ► DISCUSSING PHASE ${input.phase}
+ PHASES ► DISCUSSING PHASE ${input.phase}
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 Phase ${input.phase}: ${target.name}
@@ -161,7 +161,7 @@ Context Available:
   • ROADMAP.md (${roadmap.length} chars)
 
 ───────────────────────────────────────
-▶ When ready: Use gsd_plan with phase ${input.phase}
+▶ When ready: Use phases_plan with phase ${input.phase}
 ───────────────────────────────────────`,
     };
 }

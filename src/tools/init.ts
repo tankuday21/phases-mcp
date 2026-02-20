@@ -38,7 +38,7 @@ export function handleInit(
     if (fileManager.isGsdInitialized()) {
         return {
             success: false,
-            message: '❌ Project already initialized. Use gsd_progress to check current status.',
+            message: '❌ Project already initialized. Use phases_progress to check current status.',
             files_created: [],
         };
     }
@@ -100,17 +100,17 @@ export function handleInit(
     ];
 
     let msg = `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- GSD ► PROJECT INITIALIZED ✓
+ PHASES ► PROJECT INITIALIZED ✓
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 Project: ${input.project_name}
 Phases: ${input.phases.length}
-${codeStatus.hasCode ? `\n⚠️ Existing code detected: ${codeStatus.fileCount} files (${codeStatus.languages.join(', ')})\n   Consider running gsd_map to analyze the codebase.\n` : ''}
+${codeStatus.hasCode ? `\n⚠️ Existing code detected: ${codeStatus.fileCount} files (${codeStatus.languages.join(', ')})\n   Consider running phases_map to analyze the codebase.\n` : ''}
 Files created:
 ${filesCreated.map(f => `  • ${f}`).join('\n')}
 
 ───────────────────────────────────────
-▶ NEXT: Use gsd_plan with phase 1 to create execution plans
+▶ NEXT: Use phases_plan with phase 1 to create execution plans
 ───────────────────────────────────────`;
 
     return {

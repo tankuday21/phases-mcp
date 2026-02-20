@@ -24,16 +24,16 @@ const gitManager = new GitManager(fileManager);
 
 // ─── Create MCP Server ──────────────────────────────────────────
 const server = new McpServer({
-    name: 'gsd-mcp-server',
+    name: 'phases',
     version: '1.0.0',
 });
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-//  TOOL 1: gsd_init — Initialize a new GSD project
+//  TOOL 1: phases_init
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 server.tool(
-    'gsd_init',
-    'Initialize a new GSD project with SPEC.md, ROADMAP.md, and context files. This is the first command to run.',
+    'phases_init',
+    'Initialize a new Phases project with SPEC.md, ROADMAP.md, and context files. This is the first command to run.',
     {
         project_name: z.string().describe('Name of the project'),
         vision: z.string().describe('Project vision — one paragraph describing what you are building'),
@@ -56,10 +56,10 @@ server.tool(
 );
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-//  TOOL 2: gsd_plan — Create execution plans for a phase
+//  TOOL 2: phases_plan
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 server.tool(
-    'gsd_plan',
+    'phases_plan',
     'Create executable PLAN.md files for a phase with XML-structured tasks. Plans are grouped into waves for parallel execution.',
     {
         phase: z.number().optional().describe('Phase number to plan (auto-detects next if omitted)'),
@@ -88,10 +88,10 @@ server.tool(
 );
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-//  TOOL 3: gsd_execute — Record task completion with atomic commit
+//  TOOL 3: phases_execute
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 server.tool(
-    'gsd_execute',
+    'phases_execute',
     'Record completion of a task within a phase. Creates a summary file and makes an atomic git commit. Call this after completing each task.',
     {
         phase: z.number().describe('Phase number'),
@@ -108,10 +108,10 @@ server.tool(
 );
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-//  TOOL 4: gsd_verify — Validate must-haves with evidence
+//  TOOL 4: phases_verify
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 server.tool(
-    'gsd_verify',
+    'phases_verify',
     'Verify that a phase meets all must-have requirements with evidence. Produces a PASS/FAIL verdict.',
     {
         phase: z.number().describe('Phase number to verify'),
@@ -129,10 +129,10 @@ server.tool(
 );
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-//  TOOL 5: gsd_debug — Systematic debugging with 3-strike rule
+//  TOOL 5: phases_debug
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 server.tool(
-    'gsd_debug',
+    'phases_debug',
     'Log a debugging attempt. After 3 failed attempts, forces a context dump and fresh session (prevents circular debugging).',
     {
         phase: z.number().describe('Phase number being debugged'),
@@ -148,10 +148,10 @@ server.tool(
 );
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-//  TOOL 6: gsd_map — Analyze codebase and create ARCHITECTURE.md
+//  TOOL 6: phases_map
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 server.tool(
-    'gsd_map',
+    'phases_map',
     'Map the current codebase structure and write ARCHITECTURE.md. Use this to understand an existing project before planning.',
     {
         project_name: z.string().describe('Project name'),
@@ -171,10 +171,10 @@ server.tool(
 );
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-//  TOOL 7: gsd_progress — Show current position in roadmap
+//  TOOL 7: phases_progress
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 server.tool(
-    'gsd_progress',
+    'phases_progress',
     'Show the current project status: phase progress, current task, blockers, and recommended next action.',
     {
         working_directory: z.string().optional().describe('Project working directory'),
@@ -186,10 +186,10 @@ server.tool(
 );
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-//  TOOL 8: gsd_pause — Save session state for handoff
+//  TOOL 8: phases_pause
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 server.tool(
-    'gsd_pause',
+    'phases_pause',
     'Save the current session state. Use this when ending a coding session to preserve context for the next one.',
     {
         summary: z.string().describe('Summary of what was accomplished in this session'),
@@ -202,10 +202,10 @@ server.tool(
 );
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-//  TOOL 9: gsd_resume — Restore from last session
+//  TOOL 9: phases_resume
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 server.tool(
-    'gsd_resume',
+    'phases_resume',
     'Restore context from a previous session. Loads SPEC, ROADMAP, and STATE files.',
     {
         working_directory: z.string().optional().describe('Project working directory'),
@@ -217,10 +217,10 @@ server.tool(
 );
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-//  TOOL 10: gsd_add_todo — Quick capture an idea
+//  TOOL 10: phases_add_todo
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 server.tool(
-    'gsd_add_todo',
+    'phases_add_todo',
     'Quickly capture an idea or task into TODO.md.',
     {
         item: z.string().describe('The todo item to add'),
@@ -234,10 +234,10 @@ server.tool(
 );
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-//  TOOL 11: gsd_check_todos — List pending items
+//  TOOL 11: phases_check_todos
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 server.tool(
-    'gsd_check_todos',
+    'phases_check_todos',
     'List all pending and completed TODO items.',
     {
         working_directory: z.string().optional().describe('Project working directory'),
@@ -249,10 +249,10 @@ server.tool(
 );
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-//  TOOL 12: gsd_add_phase — Add a phase to the roadmap
+//  TOOL 12: phases_add_phase
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 server.tool(
-    'gsd_add_phase',
+    'phases_add_phase',
     'Add a new phase to the end of the roadmap.',
     {
         name: z.string().describe('Phase name'),
@@ -266,10 +266,10 @@ server.tool(
 );
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-//  TOOL 13: gsd_remove_phase — Remove a phase (with safety)
+//  TOOL 13: phases_remove_phase
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 server.tool(
-    'gsd_remove_phase',
+    'phases_remove_phase',
     'Remove a phase from the roadmap. Cannot remove completed phases (safety check).',
     {
         phase: z.number().describe('Phase number to remove'),
@@ -282,10 +282,10 @@ server.tool(
 );
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-//  TOOL 14: gsd_discuss_phase — Clarify phase scope
+//  TOOL 14: phases_discuss_phase
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 server.tool(
-    'gsd_discuss_phase',
+    'phases_discuss_phase',
     'Discuss and clarify the scope of a phase before planning. Record questions and decisions.',
     {
         phase: z.number().describe('Phase number to discuss'),
@@ -300,10 +300,10 @@ server.tool(
 );
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-//  TOOL 15: gsd_milestone — Create a new milestone
+//  TOOL 15: phases_milestone
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 server.tool(
-    'gsd_milestone',
+    'phases_milestone',
     'Create a new milestone with phases in the roadmap.',
     {
         name: z.string().describe('Milestone name'),
@@ -320,11 +320,11 @@ server.tool(
 );
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-//  TOOL 16: gsd_help — Show all available tools
+//  TOOL 16: phases_help
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 server.tool(
-    'gsd_help',
-    'Show all available GSD tools and the recommended workflow.',
+    'phases_help',
+    'Show all available Phases tools and the recommended workflow.',
     {},
     async () => {
         const result = handleHelp();
@@ -338,7 +338,7 @@ server.tool(
 async function main() {
     const transport = new StdioServerTransport();
     await server.connect(transport);
-    console.error('🚀 GSD MCP Server running on stdio');
+    console.error('🚀 Phases MCP Server running on stdio');
 }
 
 main().catch((error) => {

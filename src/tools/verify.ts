@@ -53,7 +53,7 @@ export function handleVerify(
             success: true,
             verdict: 'PASS',
             message: `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- GSD ► PHASE ${input.phase} VERIFIED ✓
+ PHASES ► PHASE ${input.phase} VERIFIED ✓
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 ${passed}/${total} must-haves passed ✅
@@ -61,7 +61,7 @@ ${passed}/${total} must-haves passed ✅
 ${input.must_haves.map(m => `  ✅ ${m.description}`).join('\n')}
 
 ───────────────────────────────────────
-▶ NEXT: Proceed to next phase or gsd_milestone
+▶ NEXT: Proceed to next phase or phases_milestone
 ───────────────────────────────────────`,
         };
     }
@@ -71,7 +71,7 @@ ${input.must_haves.map(m => `  ✅ ${m.description}`).join('\n')}
         success: true,
         verdict: 'FAIL',
         message: `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- GSD ► PHASE ${input.phase} GAPS FOUND ⚠
+ PHASES ► PHASE ${input.phase} GAPS FOUND ⚠
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 ${passed}/${total} must-haves verified

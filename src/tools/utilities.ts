@@ -19,7 +19,7 @@ export function handleAddTodo(
     }
 
     if (!fileManager.isGsdInitialized()) {
-        return { success: false, message: '❌ No GSD project found.' };
+        return { success: false, message: '❌ No Phases project found.' };
     }
 
     const todo = fileManager.readGsdFile('TODO.md') || '';
@@ -54,7 +54,7 @@ export function handleCheckTodos(
     }
 
     if (!fileManager.isGsdInitialized()) {
-        return { success: false, message: '❌ No GSD project found.' };
+        return { success: false, message: '❌ No Phases project found.' };
     }
 
     const todo = fileManager.readGsdFile('TODO.md') || 'No TODO.md found.';
@@ -73,7 +73,7 @@ export function handleCheckTodos(
     return {
         success: true,
         message: `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- GSD ► TODO LIST
+ PHASES ► TODO LIST
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 Pending (${pending.length}):
@@ -126,7 +126,7 @@ export function handleMap(
     return {
         success: true,
         message: `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- GSD ► CODEBASE MAPPED ✓
+ PHASES ► CODEBASE MAPPED ✓
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 Components found: ${input.components.length}
@@ -147,36 +147,36 @@ export function handleHelp(): { success: boolean; message: string } {
     return {
         success: true,
         message: `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- GSD ► HELP
+ PHASES ► HELP
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 🔵 CORE WORKFLOW
-  gsd_init          → Initialize project (SPEC + ROADMAP)
-  gsd_plan          → Create execution plans for a phase
-  gsd_execute       → Record task completion + atomic commit
-  gsd_verify        → Validate must-haves with evidence
-  gsd_debug         → Systematic debugging (3-strike rule)
-  gsd_map           → Analyze codebase → ARCHITECTURE.md
+  phases_init          → Initialize project (SPEC + ROADMAP)
+  phases_plan          → Create execution plans for a phase
+  phases_execute       → Record task completion + atomic commit
+  phases_verify        → Validate must-haves with evidence
+  phases_debug         → Systematic debugging (3-strike rule)
+  phases_map           → Analyze codebase → ARCHITECTURE.md
 
 🟢 NAVIGATION & STATE
-  gsd_progress      → Show current position in roadmap
-  gsd_pause         → Save session state for handoff
-  gsd_resume        → Restore from last session
+  phases_progress      → Show current position in roadmap
+  phases_pause         → Save session state for handoff
+  phases_resume        → Restore from last session
 
 🟠 PHASE MANAGEMENT
-  gsd_add_phase     → Add a phase to the roadmap
-  gsd_remove_phase  → Remove a phase (safety checks)
-  gsd_discuss_phase → Clarify scope before planning
-  gsd_milestone     → Create a new milestone
+  phases_add_phase     → Add a phase to the roadmap
+  phases_remove_phase  → Remove a phase (safety checks)
+  phases_discuss_phase → Clarify scope before planning
+  phases_milestone     → Create a new milestone
 
 🟣 UTILITIES
-  gsd_add_todo      → Quick capture an idea
-  gsd_check_todos   → List pending items
-  gsd_help          → This help message
+  phases_add_todo      → Quick capture an idea
+  phases_check_todos   → List pending items
+  phases_help          → This help message
 
 ───────────────────────────────────────
 💡 Typical flow:
-  gsd_init → gsd_plan → gsd_execute → gsd_verify
+  phases_init → phases_plan → phases_execute → phases_verify
 ───────────────────────────────────────`,
     };
 }

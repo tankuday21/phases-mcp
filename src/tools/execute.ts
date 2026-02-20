@@ -23,7 +23,7 @@ export function handleExecute(
 
     // Validate
     if (!fileManager.isGsdInitialized()) {
-        return { success: false, message: '❌ No GSD project found. Run gsd_init first.' };
+        return { success: false, message: '❌ No Phases project found. Run phases_init first.' };
     }
 
     const phases = fileManager.parseRoadmapPhases();
@@ -37,7 +37,7 @@ export function handleExecute(
     if (plans.length === 0) {
         return {
             success: false,
-            message: `❌ No plans found for Phase ${input.phase}. Run gsd_plan first.`,
+            message: `❌ No plans found for Phase ${input.phase}. Run phases_plan first.`,
         };
     }
 
@@ -92,14 +92,14 @@ ${input.files_changed?.map(f => `- ${f}`).join('\n') || 'Not specified'}
         return {
             success: true,
             message: `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- GSD ► PHASE ${input.phase} COMPLETE ✓
+ PHASES ► PHASE ${input.phase} COMPLETE ✓
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 All ${plans.length} plans executed.
 Task "${input.task_name}" completed and committed.
 
 ───────────────────────────────────────
-▶ NEXT: Use gsd_verify with phase ${input.phase}
+▶ NEXT: Use phases_verify with phase ${input.phase}
 ───────────────────────────────────────`,
         };
     }
@@ -107,7 +107,7 @@ Task "${input.task_name}" completed and committed.
     return {
         success: true,
         message: `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- GSD ► TASK COMPLETED ✓
+ PHASES ► TASK COMPLETED ✓
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 Phase ${input.phase} — "${input.task_name}"

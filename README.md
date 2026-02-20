@@ -1,78 +1,93 @@
-# 🚀 GSD MCP Server
+# 🚀 Phases MCP
 
-**Get Shit Done** — A spec-driven, context-engineered development methodology as an MCP server.
+**A spec-driven, context-engineered development methodology as an MCP server.**
 
-> Stop vibecoding. Start shipping.
+> Stop vibecoding. Start shipping phase by phase.
+
+Phases turns your AI coding assistant into a structured development partner. Define specs, plan in phases, execute with atomic commits, and verify with real evidence.
 
 ## ⚡ Quick Setup
 
-### 1. Build
+### Install & Build
 
 ```bash
+git clone https://github.com/YOUR_USERNAME/phases-mcp.git
+cd phases-mcp
 npm install
 npm run build
 ```
 
-### 2. Add to Antigravity
+### Add to Your MCP Client
 
-Add this to your `~/.gemini/antigravity/mcp_config.json`:
+Add this to your MCP configuration:
 
 ```json
 {
   "mcpServers": {
-    "gsd": {
+    "phases": {
       "command": "node",
-      "args": ["c:/Users/user/Downloads/Projects/Real Projects/GSD MCP/dist/index.js"],
+      "args": ["/path/to/phases-mcp/dist/index.js"],
       "transportType": "stdio"
     }
   }
 }
 ```
 
-### 3. Restart Antigravity
-
-Restart the IDE to load the new MCP server.
+Restart your IDE/client and all 16 `phases_*` tools will be available.
 
 ## 🎮 Available Tools (16)
 
+### 🔵 Core Workflow
 | Tool | Purpose |
 |------|---------|
-| `gsd_init` | Initialize project (SPEC + ROADMAP) |
-| `gsd_plan` | Create execution plans for a phase |
-| `gsd_execute` | Record task completion + atomic commit |
-| `gsd_verify` | Validate must-haves with evidence |
-| `gsd_debug` | Systematic debugging (3-strike rule) |
-| `gsd_map` | Analyze codebase → ARCHITECTURE.md |
-| `gsd_progress` | Show current position in roadmap |
-| `gsd_pause` | Save session state for handoff |
-| `gsd_resume` | Restore from last session |
-| `gsd_add_todo` | Quick capture an idea |
-| `gsd_check_todos` | List pending items |
-| `gsd_add_phase` | Add a phase to the roadmap |
-| `gsd_remove_phase` | Remove a phase (safety checks) |
-| `gsd_discuss_phase` | Clarify scope before planning |
-| `gsd_milestone` | Create a new milestone |
-| `gsd_help` | Show all available tools |
+| `phases_init` | Initialize project with SPEC + ROADMAP |
+| `phases_plan` | Create XML-structured execution plans |
+| `phases_execute` | Record task completion + atomic git commit |
+| `phases_verify` | Validate must-haves with evidence |
+| `phases_debug` | Systematic debugging with 3-strike rule |
+| `phases_map` | Analyze codebase → ARCHITECTURE.md |
+
+### 🟢 Navigation & State
+| Tool | Purpose |
+|------|---------|
+| `phases_progress` | Show current position in roadmap |
+| `phases_pause` | Save session state for handoff |
+| `phases_resume` | Restore context from last session |
+
+### 🟠 Phase Management
+| Tool | Purpose |
+|------|---------|
+| `phases_add_phase` | Add a phase to the roadmap |
+| `phases_remove_phase` | Remove a phase (with safety checks) |
+| `phases_discuss_phase` | Clarify scope before planning |
+| `phases_milestone` | Create a new milestone with phases |
+
+### 🟣 Utilities
+| Tool | Purpose |
+|------|---------|
+| `phases_add_todo` | Quick capture an idea or task |
+| `phases_check_todos` | List all pending TODO items |
+| `phases_help` | Show all tools and workflow |
 
 ## 🔄 Typical Workflow
 
 ```
-gsd_init → gsd_plan → gsd_execute → gsd_verify
+phases_init → phases_plan → phases_execute → phases_verify
 ```
 
-1. **`gsd_init`** — Describe your project, goals, and phases
-2. **`gsd_plan`** — Create XML-structured plans for each phase
-3. **`gsd_execute`** — Execute tasks with atomic git commits
-4. **`gsd_verify`** — Validate with evidence (screenshots, tests, curl)
+1. **`phases_init`** — Define your project vision, goals, and development phases
+2. **`phases_plan`** — Create XML-structured plans with tasks, verification commands, and acceptance criteria
+3. **`phases_execute`** — Complete tasks one-by-one, each with an atomic git commit
+4. **`phases_verify`** — Validate with real evidence (screenshots, test output, curl responses)
 
-## 📁 Generated Files
+## 📁 Project Structure Created
 
 ```
 .gsd/
 ├── SPEC.md          ← Finalized project specification
-├── ROADMAP.md       ← Phases and progress
+├── ROADMAP.md       ← Phases and progress tracking
 ├── STATE.md         ← Session memory and current position
-├── ARCHITECTURE.md  ← System design (from gsd_map)
+├── ARCHITECTURE.md  ← System design (from phases_map)
 ├── DECISIONS.md     ← Architecture Decision Records
 ├── JOURNAL.md       ← Session log
 ├── TODO.md          ← Quick capture
@@ -87,11 +102,19 @@ gsd_init → gsd_plan → gsd_execute → gsd_verify
 
 ## 🧠 Philosophy
 
-- **Plan before building** — SPEC.md matters more than you think
+- **Spec before code** — SPEC.md matters more than you think
+- **Phase-driven development** — Break work into achievable phases
 - **Fresh context > polluted context** — State dumps prevent hallucinations
 - **Proof over trust** — Screenshots and command outputs, not "looks right"
 - **Aggressive atomicity** — 2-3 tasks per plan, atomic commits
 - **3-strike debugging** — After 3 failures, dump context and start fresh
+
+## 🛠 Tech Stack
+
+- **TypeScript** — Type-safe implementation
+- **MCP SDK** — `@modelcontextprotocol/sdk` for server framework
+- **Zod** — Schema validation for all tool inputs
+- **stdio transport** — Local process communication
 
 ## License
 

@@ -38,7 +38,7 @@ export function handlePlan(
     if (!fileManager.isGsdInitialized()) {
         return {
             success: false,
-            message: '❌ No GSD project found. Run gsd_init first.',
+            message: '❌ No Phases project found. Run phases_init first.',
             plans_created: [],
         };
     }
@@ -46,7 +46,7 @@ export function handlePlan(
     if (!fileManager.isSpecFinalized()) {
         return {
             success: false,
-            message: '❌ SPEC.md must be FINALIZED before planning. Complete gsd_init first.',
+            message: '❌ SPEC.md must be FINALIZED before planning. Complete phases_init first.',
             plans_created: [],
         };
     }
@@ -121,7 +121,7 @@ export function handlePlan(
     return {
         success: true,
         message: `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- GSD ► PHASE ${phase} PLANNED ✓
+ PHASES ► PHASE ${phase} PLANNED ✓
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 ${input.plans.length} plans created
@@ -132,7 +132,7 @@ Plans:
 ${plansCreated.map(p => `  • ${p}`).join('\n')}
 
 ───────────────────────────────────────
-▶ NEXT: Use gsd_execute with phase ${phase}
+▶ NEXT: Use phases_execute with phase ${phase}
 ───────────────────────────────────────`,
         plans_created: plansCreated,
     };

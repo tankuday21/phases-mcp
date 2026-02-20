@@ -48,7 +48,7 @@ ${input.result ? `**Result**: ${input.result}` : '**Result**: Pending'}
             strikes,
             exhausted: true,
             message: `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- GSD ► DEBUG EXHAUSTED ⛔ (3/3 strikes)
+ PHASES ► DEBUG EXHAUSTED ⛔ (3/3 strikes)
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 Issue: ${input.description}
@@ -57,9 +57,9 @@ Issue: ${input.description}
 State has been saved to STATE.md.
 
 🔴 ACTION REQUIRED:
-1. Use gsd_pause to save current session
+1. Use phases_pause to save current session
 2. Start a fresh session
-3. Use gsd_resume to restore context
+3. Use phases_resume to restore context
 
 The fresh context will help avoid circular debugging.
 
@@ -72,7 +72,7 @@ The fresh context will help avoid circular debugging.
         strikes,
         exhausted: false,
         message: `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- GSD ► DEBUG ATTEMPT ${strikes}/3
+ PHASES ► DEBUG ATTEMPT ${strikes}/3
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 Issue: ${input.description}
