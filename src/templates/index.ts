@@ -211,6 +211,7 @@ export function generateArchitecture(opts: {
     overview: string;
     components: Array<{ name: string; description: string; files: string[] }>;
     techStack: string[];
+    tree: string;
 }): string {
     const componentsStr = opts.components
         .map(
@@ -233,5 +234,10 @@ ${componentsStr}
 
 ## Tech Stack
 ${opts.techStack.map(t => `- ${t}`).join('\n')}
+
+## Directory Tree
+\`\`\`text
+${opts.tree}
+\`\`\`
 `;
 }

@@ -51,6 +51,21 @@ export function handlePlan(
         };
     }
 
+    const stateValidation = stateManager.validateTransition([
+        'Ready for planning',
+        'Phase verification: PASS',
+        'Phase verification: FAIL'
+    ]);
+
+    if (!stateValidation.valid) {
+        return {
+            success: false,
+            message: stateValidation.message!,
+            plans_created: [],
+        };
+    }
+
+
     // Determine phase
     let phase = input.phase;
     if (!phase) {

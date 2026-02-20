@@ -16,6 +16,7 @@ import { handleDebug } from './tools/debug.js';
 import { handleProgress, handlePause, handleResume } from './tools/navigation.js';
 import { handleAddPhase, handleRemovePhase, handleDiscussPhase, handleMilestone } from './tools/phases.js';
 import { handleAddTodo, handleCheckTodos, handleMap, handleHelp } from './tools/utilities.js';
+import { handleRollback } from './tools/rollback.js';
 
 // ─── Initialize Managers ─────────────────────────────────────────
 const fileManager = new FileManager();
@@ -115,11 +116,10 @@ server.tool(
     'Verify that a phase meets all must-have requirements with evidence. Produces a PASS/FAIL verdict.',
     {
         phase: z.number().describe('Phase number to verify'),
-        must_haves: z.array(z.object({
-            description: z.string().describe('Must-have requirement'),
-            passed: z.boolean().describe('Whether this requirement passed'),
-            evidence: z.string().describe('Evidence (curl output, screenshot path, test results)'),
-        })).describe('Must-have verifications'),
+        tests: z.array(z.object({
+            description: z.string().describe('Description of what is being tested'),
+            command: z.string().describe('Literal shell command to execute (exit 0 = PASS). E.g. "npm run test" or "curl -f http://localhost:3000"'),
+        })).describe('Automated tests to verify the phase'),
         working_directory: z.string().optional().describe('Project working directory'),
     },
     async (input) => {
@@ -320,7 +320,23 @@ server.tool(
 );
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-//  TOOL 16: phases_help
+//  TOOL 16: phases_rollback
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+server.tool(
+    'phases_rollback',
+    'Rollback a phase by hard resetting the git repository and deleting all phase plans and summaries. Reverts to the exact state before the phase was planned.',
+    {
+        phase: z.number().describe('Phase number to rollback'),
+        working_directory: z.string().optional().describe('Project working directory'),
+    },
+    async (input) => {
+        const result = handleRollback(fileManager, stateManager, gitManager, input);
+        return { content: [{ type: 'text', text: result.message }] };
+    }
+);
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+//  TOOL 17: phases_help
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 server.tool(
     'phases_help',

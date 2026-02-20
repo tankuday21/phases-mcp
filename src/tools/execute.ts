@@ -26,6 +26,16 @@ export function handleExecute(
         return { success: false, message: '❌ No Phases project found. Run phases_init first.' };
     }
 
+    const stateValidation = stateManager.validateTransition([
+        'Ready for execution',
+        'Task completed:',
+        'Phase verification: FAIL'
+    ]);
+
+    if (!stateValidation.valid) {
+        return { success: false, message: stateValidation.message! };
+    }
+
     const phases = fileManager.parseRoadmapPhases();
     const targetPhase = phases.find(p => p.number === input.phase);
     if (!targetPhase) {
@@ -57,7 +67,16 @@ ${input.files_changed?.map(f => `- ${f}`).join('\n') || 'Not specified'}
     fileManager.writeFile(summaryFile, summaryContent);
 
     // Atomic commit per task
-    gitManager.commitTask(input.phase, input.task_name);
+    const commitData = gitManager.commitTask(input.phase, input.task_name);
+
+    // Append to audit log
+    const auditFile = `.gsd/phases/${input.phase}/audit.log`;
+    const auditEntry = `\n========================================\n` +
+        `Task: ${input.task_name}\n` +
+        `Date: ${new Date().toISOString()}\n` +
+        `========================================\n\n` +
+        `${commitData.diff || 'No file changes detected.'}\n`;
+    fileManager.appendFile(auditFile, auditEntry);
 
     // Update state
     stateManager.updateState({

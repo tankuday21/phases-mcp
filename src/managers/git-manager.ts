@@ -35,10 +35,12 @@ export class GitManager {
 
     // ─── Commits ─────────────────────────────────────────────────
 
-    commitTask(phase: number, taskName: string): string {
+    commitTask(phase: number, taskName: string): { message: string; diff: string } {
         this.exec('git add -A');
+        const diff = this.exec('git diff --staged');
         const message = `feat(phase-${phase}): ${taskName}`;
-        return this.exec(`git commit -m "${message}"`);
+        const commitResult = this.exec(`git commit -m "${message}"`);
+        return { message: commitResult, diff };
     }
 
     commitPhaseComplete(phase: number, phaseName: string): string {
@@ -73,5 +75,21 @@ export class GitManager {
 
     getLog(count: number = 5): string {
         return this.exec(`git log --oneline -n ${count}`);
+    }
+
+    // ─── Rollback ────────────────────────────────────────────────
+
+    getCommitBeforePhase(phase: number): string | null {
+        const grepStr = phase === 1
+            ? '^chore: initialize GSD project'
+            : `^docs(phase-${phase - 1}): complete`;
+
+        // Use basic grep inside git log
+        const commitHash = this.exec(`git log --grep="${grepStr}" --format="%H" -n 1`);
+        return commitHash ? commitHash.trim() : null;
+    }
+
+    rollbackToCommit(commitHash: string): string {
+        return this.exec(`git reset --hard ${commitHash}`);
     }
 }

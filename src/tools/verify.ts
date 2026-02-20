@@ -2,12 +2,13 @@ import { FileManager } from '../managers/file-manager.js';
 import { StateManager } from '../managers/state-manager.js';
 import { generateVerification } from '../templates/index.js';
 
+import { execSync } from 'child_process';
+
 export interface VerifyInput {
     phase: number;
-    must_haves: Array<{
+    tests: Array<{
         description: string;
-        passed: boolean;
-        evidence: string;
+        command: string;
     }>;
     working_directory?: string;
 }
@@ -22,17 +23,43 @@ export function handleVerify(
     }
 
     if (!fileManager.isGsdInitialized()) {
-        return { success: false, message: '❌ No GSD project found.', verdict: 'ERROR' };
+        return { success: false, message: '❌ No Phases project found.', verdict: 'ERROR' };
     }
 
-    const passed = input.must_haves.filter(m => m.passed).length;
-    const total = input.must_haves.length;
+    const stateValidation = stateManager.validateTransition([
+        'Phase fully executed',
+        'Phase verification:'
+    ]);
+
+    if (!stateValidation.valid) {
+        return { success: false, message: stateValidation.message!, verdict: 'ERROR' };
+    }
+
+    const results = input.tests.map(t => {
+        try {
+            const output = execSync(t.command, { stdio: 'pipe', encoding: 'utf-8', cwd: fileManager.getWorkingDir() });
+            return {
+                description: t.description,
+                passed: true,
+                evidence: `Command: \`${t.command}\`\nOutput:\n\`\`\`\n${output.trim() || 'Exited with 0'}\n\`\`\``
+            };
+        } catch (error: any) {
+            return {
+                description: t.description,
+                passed: false,
+                evidence: `Command: \`${t.command}\`\nFailed:\n\`\`\`\n${error.stdout?.toString() || ''}\n${error.stderr?.toString() || error.message}\n\`\`\``
+            };
+        }
+    });
+
+    const passed = results.filter(m => m.passed).length;
+    const total = results.length;
     const verdict = passed === total ? 'PASS' : 'FAIL';
 
     // Write verification file
     const verificationContent = generateVerification({
         phase: input.phase,
-        mustHaves: input.must_haves,
+        mustHaves: results,
         verdict,
     });
 
@@ -58,7 +85,7 @@ export function handleVerify(
 
 ${passed}/${total} must-haves passed ✅
 
-${input.must_haves.map(m => `  ✅ ${m.description}`).join('\n')}
+${results.map(m => `  ✅ ${m.description}`).join('\n')}
 
 ───────────────────────────────────────
 ▶ NEXT: Proceed to next phase or phases_milestone
@@ -66,7 +93,7 @@ ${input.must_haves.map(m => `  ✅ ${m.description}`).join('\n')}
         };
     }
 
-    const failures = input.must_haves.filter(m => !m.passed);
+    const failures = results.filter(m => !m.passed);
     return {
         success: true,
         verdict: 'FAIL',
@@ -74,15 +101,15 @@ ${input.must_haves.map(m => `  ✅ ${m.description}`).join('\n')}
  PHASES ► PHASE ${input.phase} GAPS FOUND ⚠
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-${passed}/${total} must-haves verified
+${passed}/${total} tests passed
 
-${input.must_haves.map(m => `  ${m.passed ? '✅' : '❌'} ${m.description}${!m.passed ? ` — ${m.evidence}` : ''}`).join('\n')}
+${results.map(m => `  ${m.passed ? '✅' : '❌'} ${m.description}`).join('\n')}
 
 Failures:
-${failures.map(f => `  ❌ ${f.description}: ${f.evidence}`).join('\n')}
+${failures.map(f => `  ❌ ${f.description}:\n${f.evidence}`).join('\n\n')}
 
 ───────────────────────────────────────
-▶ NEXT: Fix gaps and re-execute, then re-verify
+▶ NEXT: Fix gaps, document them, and re-verify
 ───────────────────────────────────────`,
     };
 }

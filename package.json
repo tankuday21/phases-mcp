@@ -1,6 +1,6 @@
 {
   "name": "phases-mcp-server",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Phases — A spec-driven, context-engineered development methodology MCP server",
   "type": "module",
   "main": "dist/index.js",
@@ -39,6 +39,7 @@
   ],
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.12.1",
+    "ignore": "^7.0.5",
     "zod": "^3.24.2"
   },
   "devDependencies": {
