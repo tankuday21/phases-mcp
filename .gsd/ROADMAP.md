@@ -24,3 +24,8 @@
 ### Phase 3: Search, Tags & Polish
 **Status**: ⬜ Not Started
 **Objective**: Add real-time search, tagging system, responsive polish, and micro-animations
+
+
+### Phase 4: Notion-Style Floating Toolbar
+**Status**: ⬜ Not Started
+**Objective**: Add a floating formatting toolbar that appears when text is selected in the editor, with options for Bold, Italic, Strikethrough, Code, Heading, Link, Quote, and List formatting

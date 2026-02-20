@@ -426,6 +426,186 @@ function formatDate(ts) {
     return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
 }
 
+// ─── Floating Format Toolbar ─────────────
+const formatToolbar = $('#formatToolbar');
+const FORMAT_MAP = {
+    bold: { wrap: '**', prefix: '', suffix: '' },
+    italic: { wrap: '*', prefix: '', suffix: '' },
+    strikethrough: { wrap: '~~', prefix: '', suffix: '' },
+    code: { wrap: '`', prefix: '', suffix: '' },
+    heading: { wrap: '', prefix: '## ', suffix: '' },
+    link: { wrap: '', prefix: '[', suffix: '](url)' },
+    quote: { wrap: '', prefix: '> ', suffix: '' },
+    list: { wrap: '', prefix: '- ', suffix: '' },
+};
+
+function applyFormat(format) {
+    const editor = els.editor;
+    const start = editor.selectionStart;
+    const end = editor.selectionEnd;
+    const selectedText = editor.value.substring(start, end);
+    if (!selectedText) return;
+
+    const fmt = FORMAT_MAP[format];
+    let newText;
+
+    if (fmt.wrap) {
+        // Check if already wrapped → toggle off
+        const before = editor.value.substring(start - fmt.wrap.length, start);
+        const after = editor.value.substring(end, end + fmt.wrap.length);
+        if (before === fmt.wrap && after === fmt.wrap) {
+            // Unwrap
+            editor.value = editor.value.substring(0, start - fmt.wrap.length)
+                + selectedText
+                + editor.value.substring(end + fmt.wrap.length);
+            editor.selectionStart = start - fmt.wrap.length;
+            editor.selectionEnd = end - fmt.wrap.length;
+        } else {
+            // Wrap
+            newText = fmt.wrap + selectedText + fmt.wrap;
+            editor.value = editor.value.substring(0, start) + newText + editor.value.substring(end);
+            editor.selectionStart = start + fmt.wrap.length;
+            editor.selectionEnd = end + fmt.wrap.length;
+        }
+    } else {
+        // Prefix/suffix style (heading, link, quote, list)
+        if (format === 'heading' || format === 'quote' || format === 'list') {
+            // Apply prefix to each line of selection
+            const lines = selectedText.split('\n');
+            newText = lines.map(line => fmt.prefix + line + fmt.suffix).join('\n');
+        } else {
+            newText = fmt.prefix + selectedText + fmt.suffix;
+        }
+        editor.value = editor.value.substring(0, start) + newText + editor.value.substring(end);
+        editor.selectionStart = start;
+        editor.selectionEnd = start + newText.length;
+    }
+
+    editor.focus();
+    updatePreview();
+    updateCharCount();
+    debouncedSave();
+    hideFormatToolbar();
+}
+
+function getCaretCoordinates(textarea, position) {
+    // Create a mirror div to measure caret position
+    const mirror = document.createElement('div');
+    const computed = getComputedStyle(textarea);
+
+    mirror.style.position = 'absolute';
+    mirror.style.top = '-9999px';
+    mirror.style.left = '-9999px';
+    mirror.style.visibility = 'hidden';
+    mirror.style.whiteSpace = 'pre-wrap';
+    mirror.style.wordWrap = 'break-word';
+    mirror.style.width = computed.width;
+    mirror.style.fontFamily = computed.fontFamily;
+    mirror.style.fontSize = computed.fontSize;
+    mirror.style.fontWeight = computed.fontWeight;
+    mirror.style.lineHeight = computed.lineHeight;
+    mirror.style.letterSpacing = computed.letterSpacing;
+    mirror.style.padding = computed.padding;
+    mirror.style.border = computed.border;
+    mirror.style.boxSizing = computed.boxSizing;
+    mirror.style.tabSize = computed.tabSize;
+
+    document.body.appendChild(mirror);
+
+    const textBefore = textarea.value.substring(0, position);
+    const textNode = document.createTextNode(textBefore);
+    mirror.appendChild(textNode);
+
+    const span = document.createElement('span');
+    span.textContent = textarea.value.substring(position, position + 1) || '.';
+    mirror.appendChild(span);
+
+    const coords = {
+        top: span.offsetTop - textarea.scrollTop,
+        left: span.offsetLeft,
+        height: span.offsetHeight,
+    };
+
+    document.body.removeChild(mirror);
+    return coords;
+}
+
+function showFormatToolbar() {
+    const editor = els.editor;
+    const start = editor.selectionStart;
+    const end = editor.selectionEnd;
+
+    if (start === end) {
+        hideFormatToolbar();
+        return;
+    }
+
+    // Get position of the start of the selection
+    const coords = getCaretCoordinates(editor, start);
+    const editorRect = editor.getBoundingClientRect();
+    const toolbarWidth = 300; // approximate
+    const toolbarHeight = 40; // approximate
+
+    let left = editorRect.left + coords.left;
+    let top = editorRect.top + coords.top - toolbarHeight - 10;
+
+    // Center toolbar over selection
+    const endCoords = getCaretCoordinates(editor, end);
+    const selectionCenterX = editorRect.left + (coords.left + endCoords.left) / 2;
+    left = selectionCenterX - toolbarWidth / 2;
+
+    // Clamp to viewport
+    left = Math.max(8, Math.min(left, window.innerWidth - toolbarWidth - 8));
+    top = Math.max(8, top);
+
+    // If above viewport, show below selection
+    if (top < 8) {
+        top = editorRect.top + coords.top + coords.height + 10;
+    }
+
+    formatToolbar.style.left = `${left}px`;
+    formatToolbar.style.top = `${top}px`;
+    formatToolbar.classList.add('visible');
+}
+
+function hideFormatToolbar() {
+    formatToolbar.classList.remove('visible');
+}
+
+function initFormatToolbar() {
+    // Click handlers on format buttons
+    formatToolbar.querySelectorAll('.fmt-btn').forEach(btn => {
+        btn.addEventListener('mousedown', (e) => {
+            e.preventDefault(); // prevent blur
+            e.stopPropagation();
+            const format = btn.dataset.format;
+            applyFormat(format);
+        });
+    });
+
+    // Show toolbar on text selection in editor
+    els.editor.addEventListener('mouseup', () => {
+        setTimeout(showFormatToolbar, 10);
+    });
+
+    // Show toolbar on keyboard selection (shift+arrows)
+    els.editor.addEventListener('keyup', (e) => {
+        if (e.shiftKey || e.key === 'Shift') {
+            setTimeout(showFormatToolbar, 10);
+        }
+    });
+
+    // Hide toolbar when clicking outside
+    document.addEventListener('mousedown', (e) => {
+        if (!formatToolbar.contains(e.target) && e.target !== els.editor) {
+            hideFormatToolbar();
+        }
+    });
+
+    // Hide on scroll
+    els.editor.addEventListener('scroll', hideFormatToolbar);
+}
+
 // ─── Event Listeners ─────────────────────
 function initEvents() {
     // Editor input → live preview + auto-save
@@ -478,6 +658,16 @@ function initEvents() {
 
     // Keyboard shortcuts
     document.addEventListener('keydown', (e) => {
+        // Ctrl+B → Bold selected text
+        if (e.ctrlKey && e.key === 'b' && document.activeElement === els.editor) {
+            e.preventDefault();
+            applyFormat('bold');
+        }
+        // Ctrl+I → Italic selected text
+        if (e.ctrlKey && e.key === 'i' && document.activeElement === els.editor) {
+            e.preventDefault();
+            applyFormat('italic');
+        }
         // Ctrl+N → New note
         if (e.ctrlKey && e.key === 'n') {
             e.preventDefault();
@@ -508,6 +698,7 @@ function init() {
     renderNoteList();
     renderTagsFilter();
     initResizeHandle();
+    initFormatToolbar();
     initEvents();
 
     if (notes.length > 0) {
@@ -519,3 +710,4 @@ function init() {
 
 // Start the app
 init();
+
