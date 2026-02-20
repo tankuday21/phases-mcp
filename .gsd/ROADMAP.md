@@ -14,7 +14,7 @@
 ## Phases
 
 ### Phase 1: Core UI & Editor
-**Status**: ⬜ Not Started
+**Status**: ✅ Complete
 **Objective**: Build the HTML structure, CSS design system, and split-pane markdown editor with live preview
 
 ### Phase 2: Note CRUD & Persistence
