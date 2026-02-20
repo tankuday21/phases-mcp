@@ -27,5 +27,5 @@
 
 
 ### Phase 4: Notion-Style Floating Toolbar
-**Status**: ⬜ Not Started
+**Status**: ✅ Complete
 **Objective**: Add a floating formatting toolbar that appears when text is selected in the editor, with options for Bold, Italic, Strikethrough, Code, Heading, Link, Quote, and List formatting
