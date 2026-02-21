@@ -37,23 +37,6 @@
             overflow-x: hidden;
         }
 
-        @keyframes pulseGlow {
-            0% {
-                transform: translateX(-50%) scale(1);
-                opacity: 0.8;
-            }
-
-            50% {
-                transform: translateX(-50%) scale(1.1);
-                opacity: 1;
-            }
-
-            100% {
-                transform: translateX(-50%) scale(1);
-                opacity: 0.8;
-            }
-        }
-
         /* Background glow effect */
         .bg-glow {
             position: absolute;
@@ -66,7 +49,6 @@
             filter: blur(80px);
             z-index: -1;
             pointer-events: none;
-            animation: pulseGlow 8s infinite ease-in-out;
         }
 
         .container {
@@ -82,20 +64,6 @@
             animation: fadeInDown 0.8s ease-out;
         }
 
-        @keyframes floatBadge {
-            0% {
-                transform: translateY(0px);
-            }
-
-            50% {
-                transform: translateY(-5px);
-            }
-
-            100% {
-                transform: translateY(0px);
-            }
-        }
-
         .badge {
             display: inline-block;
             background: rgba(59, 130, 246, 0.1);
@@ -106,17 +74,6 @@
             font-weight: 600;
             margin-bottom: 1.5rem;
             border: 1px solid rgba(59, 130, 246, 0.2);
-            animation: floatBadge 3s infinite ease-in-out;
-        }
-
-        @keyframes textShine {
-            0% {
-                background-position: 0% 50%;
-            }
-
-            100% {
-                background-position: 200% 50%;
-            }
         }
 
         h1 {
@@ -125,12 +82,10 @@
             letter-spacing: -0.05em;
             line-height: 1.1;
             margin-bottom: 1.5rem;
-            background: linear-gradient(to right, #ffffff, #a1a1aa, #ffffff);
-            background-size: 200% auto;
-            -webkit-background-clip: text;
+            background: linear-gradient(to right, #ffffff, #a1a1aa);
             background-clip: text;
+            -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
-            animation: textShine 4s linear infinite;
         }
 
         p.subtitle {
@@ -321,7 +276,7 @@
     <div class="bg-glow"></div>
     <div class="container">
         <header>
-            <div class="badge">v1.1.1 Now Available</div>
+            <div class="badge">v1.0.0 Now Available</div>
             <h1>Stop vibecoding.<br>Start shipping.</h1>
             <p class="subtitle">Phases turns your AI coding assistant into a structured development partner. Define
                 specs, plan in phases, execute with atomic commits, and verify with real evidence.</p>
@@ -375,9 +330,9 @@
                     &nbsp;&nbsp;<span class="string">"mcpServers"</span>: {<br>
                     &nbsp;&nbsp;&nbsp;&nbsp;<span class="string">"phases"</span>: {<br>
                     &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="string">"command"</span>: <span
-                        class="string">"npx"</span>,<br>
-                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="string">"args"</span>: [<span
-                        class="string">"-y"</span>, <span class="string">"phases-mcp-server"</span>]<br>
+                        class="string">"phases-mcp-server"</span>,<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="string">"transportType"</span>: <span
+                        class="string">"stdio"</span><br>
                     &nbsp;&nbsp;&nbsp;&nbsp;}<br>
                     &nbsp;&nbsp;}<br>
                     }
