@@ -1,11 +1,12 @@
 import { FileManager } from '../managers/file-manager.js';
 import { StateManager } from '../managers/state-manager.js';
 import { GitManager } from '../managers/git-manager.js';
-import fs from 'fs';
-import path from 'path';
+
+// ─── phases_rollback ────────────────────────────────────────────
 
 export interface RollbackInput {
     phase: number;
+    confirm?: boolean;
     working_directory?: string;
 }
 
@@ -19,49 +20,114 @@ export function handleRollback(
         fileManager.setWorkingDir(input.working_directory);
     }
 
-    if (!fileManager.isGsdInitialized() || !gitManager.isGitRepo()) {
-        return { success: false, message: '❌ GSD project or Git repository not initialized.' };
+    if (!fileManager.isGsdInitialized()) {
+        return { success: false, message: '❌ No Phases project found.' };
     }
 
-    // Attempt to find the snapshot commit before this phase began planning/execution.
-    const targetCommit = gitManager.getCommitBeforePhase(input.phase);
+    const phases = fileManager.parseRoadmapPhases();
+    const target = phases.find(p => p.number === input.phase);
 
-    if (!targetCommit) {
+    if (!target) {
         return {
             success: false,
-            message: `❌ Cannot find a valid commit to rollback Phase ${input.phase}. 
-Ensure the previous phase was fully completed or this is a properly initialized repository.`
+            message: `❌ Phase ${input.phase} not found. Available: ${phases.map(p => p.number).join(', ')}`,
         };
     }
 
-    // 1. Perform a hard reset
-    const result = gitManager.rollbackToCommit(targetCommit);
+    // Safety: require explicit confirmation
+    if (!input.confirm) {
+        // Show what would be rolled back
+        const planFiles = fileManager.getPlanFiles(input.phase);
+        const summaryFiles = fileManager.getSummaryFiles(input.phase);
 
-    // 2. Clear out any uncommitted/untracked debris in the phase folder
-    try {
-        const phaseDir = path.join(fileManager.getWorkingDir(), '.gsd', 'phases', input.phase.toString());
-        if (fs.existsSync(phaseDir)) {
-            fs.rmSync(phaseDir, { recursive: true, force: true });
-        }
-    } catch (e) {
-        // non-fatal
+        return {
+            success: false,
+            message: `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ PHASES ► ROLLBACK PREVIEW ⚠️
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Phase ${input.phase}: "${target.name}"
+Status: ${target.status}
+
+This will:
+  🗑️ Delete ${planFiles.length} plan file(s)
+  🗑️ Delete ${summaryFiles.length} summary file(s)
+  🔄 Reset phase status to "Not Started"
+  📝 Reset the phase using git
+
+⚠️ WARNING: This action uses git reset and cannot be undone!
+
+───────────────────────────────────────
+▶ To confirm, call phases_rollback again with:
+  { "phase": ${input.phase}, "confirm": true }
+───────────────────────────────────────`,
+        };
     }
+
+    // Find the commit to rollback to
+    const rollbackCommit = gitManager.findPhaseStartCommit(input.phase);
+
+    if (rollbackCommit) {
+        // Perform git hard reset
+        gitManager.hardReset(rollbackCommit);
+    }
+
+    // Clean up phase files (in case git reset didn't catch everything)
+    const phaseDir = fileManager.getPhaseDir(input.phase);
+    const allFiles = fileManager.listFiles(phaseDir);
+    let filesDeleted = 0;
+    for (const file of allFiles) {
+        try {
+            fileManager.deleteFile(`${phaseDir}/${file}`);
+            filesDeleted++;
+        } catch {
+            // File may already be deleted by git reset
+        }
+    }
+
+    // Update ROADMAP.md — reset phase status
+    const roadmap = fileManager.readGsdFile('ROADMAP.md');
+    if (roadmap) {
+        const updated = roadmap.replace(
+            new RegExp(`(### Phase ${input.phase}:[\\s\\S]*?\\*\\*Status\\*\\*:)\\s*.+`),
+            `$1 ⬜ Not Started`
+        );
+        fileManager.writeGsdFile('ROADMAP.md', updated);
+    }
+
+    // Update state
+    stateManager.updateState({
+        phase: input.phase,
+        task: `Phase ${input.phase} rolled back`,
+        status: `Phase ${input.phase} reset to Not Started`,
+    });
+
+    // Record in journal
+    const journal = fileManager.readGsdFile('JOURNAL.md') || '';
+    const rollbackEntry = `
+### Phase ${input.phase} Rolled Back — ${new Date().toISOString().split('T')[0]}
+- Phase "${target.name}" was rolled back to its pre-planning state
+${rollbackCommit ? `- Git reset to: ${rollbackCommit}` : '- No git commits found for this phase'}
+- ${filesDeleted} file(s) cleaned up
+`;
+    fileManager.writeGsdFile('JOURNAL.md', journal + rollbackEntry);
+
+    // Commit the rollback state
+    gitManager.commitGeneral(`rollback(phase-${input.phase}): reset ${target.name}`);
 
     return {
         success: true,
         message: `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- PHASES ► ROLLBACK COMPLETE ⏪
+ PHASES ► PHASE ${input.phase} ROLLED BACK ✓
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-Phase ${input.phase} has been rolled back.
-Git repository reset to commit: ${targetCommit.substring(0, 7)}
-Output: ${result}
-
-Any plans, summaries, and code changes made during this phase have been wiped.
-Your project state and roadmap are restored to the exact moment before Phase ${input.phase} started.
+Phase ${input.phase}: "${target.name}"
+${rollbackCommit ? `Git reset to: ${rollbackCommit}` : 'No phase commits found — files cleaned up'}
+Files removed: ${filesDeleted}
+Status: ⬜ Not Started
 
 ───────────────────────────────────────
-▶ NEXT: You can use phases_plan again with phase ${input.phase}
+▶ NEXT: Re-plan Phase ${input.phase} with phases_plan
 ───────────────────────────────────────`,
     };
 }

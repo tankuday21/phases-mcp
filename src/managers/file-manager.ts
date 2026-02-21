@@ -1,4 +1,4 @@
-import { readFileSync, writeFileSync, existsSync, mkdirSync, readdirSync, statSync, appendFileSync } from 'fs';
+import { readFileSync, writeFileSync, existsSync, mkdirSync, readdirSync, statSync, unlinkSync } from 'fs';
 import { join, resolve } from 'path';
 
 export class FileManager {
@@ -44,17 +44,15 @@ export class FileManager {
         writeFileSync(fullPath, content, 'utf-8');
     }
 
-    appendFile(relativePath: string, content: string): void {
-        const fullPath = join(this.workingDir, relativePath);
-        const dir = fullPath.substring(0, fullPath.lastIndexOf('\\') > -1 ? fullPath.lastIndexOf('\\') : fullPath.lastIndexOf('/'));
-        if (!existsSync(dir)) {
-            mkdirSync(dir, { recursive: true });
-        }
-        appendFileSync(fullPath, content, 'utf-8');
-    }
-
     fileExists(relativePath: string): boolean {
         return existsSync(join(this.workingDir, relativePath));
+    }
+
+    deleteFile(relativePath: string): void {
+        const fullPath = join(this.workingDir, relativePath);
+        if (existsSync(fullPath)) {
+            unlinkSync(fullPath);
+        }
     }
 
     ensureDir(relativePath: string): void {

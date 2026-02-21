@@ -136,23 +136,6 @@ Continue from the current position.
         return this.getCurrentState().debugStrikes >= 3;
     }
 
-    // ─── Strict Workflow Enforcement ─────────────────────────────
-
-    validateTransition(allowedStatuses: string[]): { valid: boolean; current?: string; message?: string } {
-        const state = this.getCurrentState();
-
-        // If state is completely uninitialized, status is 'Not initialized'
-        if (allowedStatuses.some(status => state.status.startsWith(status) || state.status === status)) {
-            return { valid: true, current: state.status };
-        }
-
-        return {
-            valid: false,
-            current: state.status,
-            message: `❌ Strict Workflow Enforced: You cannot perform this action right now.\n   Current Status: ${state.status}\n   Allowed Statuses: ${allowedStatuses.join(' OR ')}\n   Please follow the exact Phases methodology.`
-        };
-    }
-
     // ─── Private Helpers ─────────────────────────────────────────
 
     private parseBlockers(content: string): string[] {

@@ -1,16 +1,63 @@
+import { execSync } from 'child_process';
 import { FileManager } from '../managers/file-manager.js';
 import { StateManager } from '../managers/state-manager.js';
-import { generateVerification } from '../templates/index.js';
+import { generateVerification, generateTestResults } from '../templates/index.js';
 
-import { execSync } from 'child_process';
+// ─── phases_verify (upgraded with auto-test execution) ──────────
+
+export interface TestSpec {
+    description: string;
+    command: string;
+}
 
 export interface VerifyInput {
     phase: number;
-    tests: Array<{
-        description: string;
-        command: string;
-    }>;
+    tests: Array<TestSpec>;
     working_directory?: string;
+}
+
+interface TestResult {
+    description: string;
+    command: string;
+    passed: boolean;
+    output: string;
+    duration: number;
+    error?: string;
+}
+
+function runTest(test: TestSpec, cwd: string): TestResult {
+    const start = Date.now();
+    try {
+        const output = execSync(test.command, {
+            cwd,
+            encoding: 'utf-8',
+            timeout: 30000, // 30 second timeout per test
+            stdio: ['pipe', 'pipe', 'pipe'],
+        });
+        const duration = Date.now() - start;
+
+        return {
+            description: test.description,
+            command: test.command,
+            passed: true,
+            output: output.trim().substring(0, 2000), // Cap output at 2000 chars
+            duration,
+        };
+    } catch (error: any) {
+        const duration = Date.now() - start;
+        const stdout = error.stdout?.trim() || '';
+        const stderr = error.stderr?.trim() || '';
+        const output = [stdout, stderr].filter(Boolean).join('\n').substring(0, 2000);
+
+        return {
+            description: test.description,
+            command: test.command,
+            passed: false,
+            output,
+            duration,
+            error: error.message?.substring(0, 500) || 'Command failed',
+        };
+    }
 }
 
 export function handleVerify(
@@ -26,46 +73,50 @@ export function handleVerify(
         return { success: false, message: '❌ No Phases project found.', verdict: 'ERROR' };
     }
 
-    const stateValidation = stateManager.validateTransition([
-        'Phase fully executed',
-        'Phase verification:'
-    ]);
+    const cwd = fileManager.getWorkingDir();
 
-    if (!stateValidation.valid) {
-        return { success: false, message: stateValidation.message!, verdict: 'ERROR' };
+    // Run all tests
+    const results: TestResult[] = [];
+    for (const test of input.tests) {
+        const result = runTest(test, cwd);
+        results.push(result);
     }
 
-    const results = input.tests.map(t => {
-        try {
-            const output = execSync(t.command, { stdio: 'pipe', encoding: 'utf-8', cwd: fileManager.getWorkingDir() });
-            return {
-                description: t.description,
-                passed: true,
-                evidence: `Command: \`${t.command}\`\nOutput:\n\`\`\`\n${output.trim() || 'Exited with 0'}\n\`\`\``
-            };
-        } catch (error: any) {
-            return {
-                description: t.description,
-                passed: false,
-                evidence: `Command: \`${t.command}\`\nFailed:\n\`\`\`\n${error.stdout?.toString() || ''}\n${error.stderr?.toString() || error.message}\n\`\`\``
-            };
-        }
-    });
-
-    const passed = results.filter(m => m.passed).length;
+    const passed = results.filter(r => r.passed).length;
+    const failed = results.filter(r => !r.passed).length;
     const total = results.length;
-    const verdict = passed === total ? 'PASS' : 'FAIL';
+    const totalDuration = results.reduce((sum, r) => sum + r.duration, 0);
+    const verdict = failed === 0 ? 'PASS' : 'FAIL';
 
-    // Write verification file
+    // Write VERIFICATION.md
     const verificationContent = generateVerification({
         phase: input.phase,
-        mustHaves: results,
+        mustHaves: results.map(r => ({
+            description: r.description,
+            passed: r.passed,
+            evidence: r.passed
+                ? `Command succeeded (${r.duration}ms)`
+                : `Command failed: ${r.error || 'Non-zero exit code'}`,
+        })),
         verdict,
     });
 
     fileManager.writeFile(
         `.gsd/phases/${input.phase}/VERIFICATION.md`,
         verificationContent
+    );
+
+    // Write TEST-RESULTS.md with full output
+    const testResultsContent = generateTestResults({
+        phase: input.phase,
+        results,
+        totalDuration,
+        verdict,
+    });
+
+    fileManager.writeFile(
+        `.gsd/phases/${input.phase}/TEST-RESULTS.md`,
+        testResultsContent
     );
 
     // Update state
@@ -75,17 +126,28 @@ export function handleVerify(
         status: `Phase ${input.phase} verification: ${verdict}`,
     });
 
+    // Build results display
+    const resultsDisplay = results
+        .map(r => {
+            const icon = r.passed ? '✅' : '❌';
+            const time = `${r.duration}ms`;
+            return `  ${icon} ${r.description} (${time})\n     $ ${r.command}${!r.passed ? `\n     ⛔ ${r.error || 'Failed'}` : ''}`;
+        })
+        .join('\n\n');
+
     if (verdict === 'PASS') {
         return {
             success: true,
             verdict: 'PASS',
             message: `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- PHASES ► PHASE ${input.phase} VERIFIED ✓
+ PHASES ► PHASE ${input.phase} VERIFIED ✅
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-${passed}/${total} must-haves passed ✅
+${passed}/${total} tests passed (${totalDuration}ms total)
 
-${results.map(m => `  ✅ ${m.description}`).join('\n')}
+${resultsDisplay}
+
+📄 Full results: .gsd/phases/${input.phase}/TEST-RESULTS.md
 
 ───────────────────────────────────────
 ▶ NEXT: Proceed to next phase or phases_milestone
@@ -93,23 +155,21 @@ ${results.map(m => `  ✅ ${m.description}`).join('\n')}
         };
     }
 
-    const failures = results.filter(m => !m.passed);
     return {
         success: true,
         verdict: 'FAIL',
         message: `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- PHASES ► PHASE ${input.phase} GAPS FOUND ⚠
+ PHASES ► PHASE ${input.phase} TESTS FAILED ❌
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-${passed}/${total} tests passed
+${passed}/${total} tests passed, ${failed} FAILED (${totalDuration}ms total)
 
-${results.map(m => `  ${m.passed ? '✅' : '❌'} ${m.description}`).join('\n')}
+${resultsDisplay}
 
-Failures:
-${failures.map(f => `  ❌ ${f.description}:\n${f.evidence}`).join('\n\n')}
+📄 Full results: .gsd/phases/${input.phase}/TEST-RESULTS.md
 
 ───────────────────────────────────────
-▶ NEXT: Fix gaps, document them, and re-verify
+▶ NEXT: Fix failures and re-verify, or use phases_rollback
 ───────────────────────────────────────`,
     };
 }

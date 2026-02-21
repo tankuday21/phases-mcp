@@ -16,6 +16,8 @@ import { handleDebug } from './tools/debug.js';
 import { handleProgress, handlePause, handleResume } from './tools/navigation.js';
 import { handleAddPhase, handleRemovePhase, handleDiscussPhase, handleMilestone } from './tools/phases.js';
 import { handleAddTodo, handleCheckTodos, handleMap, handleHelp } from './tools/utilities.js';
+import { handleClarify } from './tools/clarify.js';
+import { handleRefine } from './tools/refine.js';
 import { handleRollback } from './tools/rollback.js';
 
 // ─── Initialize Managers ─────────────────────────────────────────
@@ -109,7 +111,7 @@ server.tool(
 );
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-//  TOOL 4: phases_verify
+//  TOOL 4: phases_verify (auto-runs test commands)
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 server.tool(
     'phases_verify',
@@ -320,23 +322,7 @@ server.tool(
 );
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-//  TOOL 16: phases_rollback
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-server.tool(
-    'phases_rollback',
-    'Rollback a phase by hard resetting the git repository and deleting all phase plans and summaries. Reverts to the exact state before the phase was planned.',
-    {
-        phase: z.number().describe('Phase number to rollback'),
-        working_directory: z.string().optional().describe('Project working directory'),
-    },
-    async (input) => {
-        const result = handleRollback(fileManager, stateManager, gitManager, input);
-        return { content: [{ type: 'text', text: result.message }] };
-    }
-);
-
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-//  TOOL 17: phases_help
+//  TOOL 16: phases_help
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 server.tool(
     'phases_help',
@@ -349,12 +335,71 @@ server.tool(
 );
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+//  TOOL 17: phases_clarify
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+server.tool(
+    'phases_clarify',
+    'Ask smart clarifying questions before starting a project. Call this FIRST to understand user intent before phases_init. Pass description only to get questions, then call again with answers to get a ready-to-init summary.',
+    {
+        description: z.string().describe('Raw user description of what they want to build'),
+        project_type: z.enum(['web-app', 'api', 'cli', 'library', 'mobile', 'other']).optional().describe('Type of project'),
+        answers: z.array(z.object({
+            question: z.string().describe('The question that was asked'),
+            answer: z.string().describe('The user\'s answer'),
+        })).optional().describe('Answers to previously asked questions'),
+        working_directory: z.string().optional().describe('Project working directory'),
+    },
+    async (input) => {
+        const result = handleClarify(fileManager, stateManager, input);
+        return { content: [{ type: 'text', text: result.message }] };
+    }
+);
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+//  TOOL 18: phases_refine
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+server.tool(
+    'phases_refine',
+    'Break a large phase into smaller, more focused sub-phases. Use this when a phase has too many objectives or feels too big. Updates ROADMAP.md and renumbers subsequent phases.',
+    {
+        phase: z.number().describe('Phase number to refine/split'),
+        sub_phases: z.array(z.object({
+            name: z.string().describe('Sub-phase name'),
+            objective: z.string().describe('Single-responsibility objective for this sub-phase'),
+        })).describe('The smaller sub-phases to split into (minimum 2)'),
+        reason: z.string().optional().describe('Why this phase is being refined'),
+        working_directory: z.string().optional().describe('Project working directory'),
+    },
+    async (input) => {
+        const result = handleRefine(fileManager, stateManager, input);
+        return { content: [{ type: 'text', text: result.message }] };
+    }
+);
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+//  TOOL 19: phases_rollback
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+server.tool(
+    'phases_rollback',
+    'Rollback a phase by hard resetting the git repository and deleting all phase plans and summaries. Reverts to the exact state before the phase was planned.',
+    {
+        phase: z.number().describe('Phase number to rollback'),
+        confirm: z.boolean().optional().describe('Must be true to actually rollback. Without confirmation, shows a preview of what would be rolled back.'),
+        working_directory: z.string().optional().describe('Project working directory'),
+    },
+    async (input) => {
+        const result = handleRollback(fileManager, stateManager, gitManager, input);
+        return { content: [{ type: 'text', text: result.message }] };
+    }
+);
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 //  START SERVER
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 async function main() {
     const transport = new StdioServerTransport();
     await server.connect(transport);
-    console.error('🚀 Phases MCP Server running on stdio');
+    console.error('🚀 Phases MCP Server running on stdio (19 tools)');
 }
 
 main().catch((error) => {

@@ -1,9 +1,6 @@
 import { FileManager } from '../managers/file-manager.js';
 import { StateManager } from '../managers/state-manager.js';
 import { generateArchitecture } from '../templates/index.js';
-import ignore from 'ignore';
-import fs from 'fs';
-import path from 'path';
 
 // ─── gsd_add_todo ──────────────────────────────────────────────
 
@@ -117,54 +114,11 @@ export function handleMap(
         fileManager.ensureDir('.gsd');
     }
 
-    const workingDir = fileManager.getWorkingDir();
-    const gitignorePath = path.join(workingDir, '.gitignore');
-    const ig = ignore().add(fs.existsSync(gitignorePath) ? fs.readFileSync(gitignorePath, 'utf8') : '');
-
-    function buildTree(dir: string, prefix = ''): string {
-        try {
-            const files = fs.readdirSync(dir);
-            let output = '';
-
-            const sorted = files.sort((a, b) => {
-                const aIsDir = fs.statSync(path.join(dir, a)).isDirectory();
-                const bIsDir = fs.statSync(path.join(dir, b)).isDirectory();
-                if (aIsDir && !bIsDir) return -1;
-                if (!aIsDir && bIsDir) return 1;
-                return a.localeCompare(b);
-            });
-
-            const filteredAndMapped = sorted.map(file => {
-                const fullPath = path.join(dir, file);
-                const relPath = path.relative(workingDir, fullPath).replace(/\\/g, '/');
-                return { file, fullPath, relPath, ignored: file === '.git' || ig.ignores(relPath) };
-            }).filter(item => !item.ignored);
-
-            for (let i = 0; i < filteredAndMapped.length; i++) {
-                const { file, fullPath } = filteredAndMapped[i];
-                const isLast = i === filteredAndMapped.length - 1;
-                const pointer = isLast ? '└── ' : '├── ';
-                output += `${prefix}${pointer}${file}\n`;
-
-                if (fs.statSync(fullPath).isDirectory()) {
-                    const nextPrefix = prefix + (isLast ? '    ' : '│   ');
-                    output += buildTree(fullPath, nextPrefix);
-                }
-            }
-            return output;
-        } catch {
-            return '';
-        }
-    }
-
-    const tree = buildTree(workingDir);
-
     const archContent = generateArchitecture({
         projectName: input.project_name,
         overview: input.overview,
         components: input.components,
         techStack: input.tech_stack,
-        tree,
     });
 
     fileManager.writeGsdFile('ARCHITECTURE.md', archContent);
@@ -172,16 +126,16 @@ export function handleMap(
     return {
         success: true,
         message: `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-                PHASES ► CODEBASE MAPPED ✓
+ PHASES ► CODEBASE MAPPED ✓
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 Components found: ${input.components.length}
 Tech stack: ${input.tech_stack.join(', ')}
 
-                Components:
+Components:
 ${input.components.map(c => `  📦 ${c.name} (${c.files.length} files)`).join('\n')}
 
-Written to: .gsd / ARCHITECTURE.md
+Written to: .gsd/ARCHITECTURE.md
 
 ───────────────────────────────────────`,
     };
@@ -193,20 +147,26 @@ export function handleHelp(): { success: boolean; message: string } {
     return {
         success: true,
         message: `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-                PHASES ► HELP
+ PHASES ► HELP (19 tools)
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
+🔴 CLARIFY FIRST (NEW!)
+  phases_clarify      → Ask smart questions to understand intent
+                        Call BEFORE phases_init
+
 🔵 CORE WORKFLOW
-                phases_init          → Initialize project(SPEC + ROADMAP)
-                phases_plan          → Create execution plans for a phase
+  phases_init          → Initialize project (SPEC + ROADMAP)
+  phases_refine        → Split large phases into smaller sub-phases (NEW!)
+  phases_plan          → Create execution plans for a phase
   phases_execute       → Record task completion + atomic commit
-                phases_verify        → Validate must - haves with evidence
-  phases_debug         → Systematic debugging(3 - strike rule)
-                phases_map           → Analyze codebase → ARCHITECTURE.md
+  phases_verify        → Auto-run test commands with real evidence (UPGRADED!)
+  phases_debug         → Systematic debugging (3-strike rule)
+  phases_rollback      → Revert a phase that went wrong (NEW!)
+  phases_map           → Analyze codebase → ARCHITECTURE.md
 
 🟢 NAVIGATION & STATE
-                phases_progress      → Show current position in roadmap
-                phases_pause         → Save session state for handoff
+  phases_progress      → Show current position in roadmap
+  phases_pause         → Save session state for handoff
   phases_resume        → Restore from last session
 
 🟠 PHASE MANAGEMENT
@@ -214,16 +174,18 @@ export function handleHelp(): { success: boolean; message: string } {
   phases_remove_phase  → Remove a phase (safety checks)
   phases_discuss_phase → Clarify scope before planning
   phases_milestone     → Create a new milestone
-  phases_rollback      → Revert a botched phase with git reset
 
 🟣 UTILITIES
-                phases_add_todo      → Quick capture an idea
-                phases_check_todos   → List pending items
-                phases_help          → This help message
+  phases_add_todo      → Quick capture an idea
+  phases_check_todos   → List pending items
+  phases_help          → This help message
 
 ───────────────────────────────────────
-💡 Typical flow:
-                phases_init → phases_plan → phases_execute → phases_verify
+💡 Enhanced workflow:
+  phases_clarify → phases_init → phases_refine
+  → phases_plan → phases_execute → phases_verify
+  → (phases_rollback if needed)
 ───────────────────────────────────────`,
     };
 }
+

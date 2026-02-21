@@ -204,6 +204,55 @@ ${mustHavesStr}
 `;
 }
 
+// ─── GSD Template: TEST-RESULTS.md ─────────────────────────────
+
+export function generateTestResults(opts: {
+    phase: number;
+    results: Array<{
+        description: string;
+        command: string;
+        passed: boolean;
+        output: string;
+        duration: number;
+        error?: string;
+    }>;
+    totalDuration: number;
+    verdict: 'PASS' | 'FAIL';
+}): string {
+    const passed = opts.results.filter(r => r.passed).length;
+    const total = opts.results.length;
+
+    const resultsStr = opts.results
+        .map(
+            (r, i) => `### Test ${i + 1}: ${r.description}
+- **Command**: \`${r.command}\`
+- **Result**: ${r.passed ? '✅ PASSED' : '❌ FAILED'}
+- **Duration**: ${r.duration}ms
+${r.error ? `- **Error**: ${r.error}\n` : ''}
+<details>
+<summary>Output</summary>
+
+\`\`\`
+${r.output || '(no output)'}
+\`\`\`
+
+</details>
+`
+        )
+        .join('\n');
+
+    return `# TEST-RESULTS.md — Phase ${opts.phase}
+
+> **Run at**: ${new Date().toISOString()}
+> **Verdict**: ${opts.verdict}
+> **Results**: ${passed}/${total} passed (${opts.totalDuration}ms total)
+
+## Results
+
+${resultsStr}
+`;
+}
+
 // ─── GSD Template: ARCHITECTURE.md ─────────────────────────────
 
 export function generateArchitecture(opts: {
@@ -211,7 +260,6 @@ export function generateArchitecture(opts: {
     overview: string;
     components: Array<{ name: string; description: string; files: string[] }>;
     techStack: string[];
-    tree: string;
 }): string {
     const componentsStr = opts.components
         .map(
@@ -234,10 +282,5 @@ ${componentsStr}
 
 ## Tech Stack
 ${opts.techStack.map(t => `- ${t}`).join('\n')}
-
-## Directory Tree
-\`\`\`text
-${opts.tree}
-\`\`\`
 `;
 }

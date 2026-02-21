@@ -35,12 +35,10 @@ export class GitManager {
 
     // ─── Commits ─────────────────────────────────────────────────
 
-    commitTask(phase: number, taskName: string): { message: string; diff: string } {
+    commitTask(phase: number, taskName: string): string {
         this.exec('git add -A');
-        const diff = this.exec('git diff --staged');
         const message = `feat(phase-${phase}): ${taskName}`;
-        const commitResult = this.exec(`git commit -m "${message}"`);
-        return { message: commitResult, diff };
+        return this.exec(`git commit -m "${message}"`);
     }
 
     commitPhaseComplete(phase: number, phaseName: string): string {
@@ -79,17 +77,29 @@ export class GitManager {
 
     // ─── Rollback ────────────────────────────────────────────────
 
-    getCommitBeforePhase(phase: number): string | null {
-        const grepStr = phase === 1
-            ? '^chore: initialize GSD project'
-            : `^docs(phase-${phase - 1}): complete`;
+    findPhaseStartCommit(phase: number): string | null {
+        // Find the commit just before this phase's plans were created
+        const log = this.exec(`git log --oneline --all`);
+        const lines = log.split('\n').filter(l => l.trim());
 
-        // Use basic grep inside git log
-        const commitHash = this.exec(`git log --grep="${grepStr}" --format="%H" -n 1`);
-        return commitHash ? commitHash.trim() : null;
+        // Look for the plan commit for this phase
+        for (let i = 0; i < lines.length; i++) {
+            const line = lines[i];
+            if (line.includes(`docs(phase-${phase}): create execution plans`) ||
+                line.includes(`feat(phase-${phase}):`) ||
+                line.includes(`docs(phase-${phase}): complete`)) {
+                // Return the commit AFTER this one (the one before the phase started)
+                if (i + 1 < lines.length) {
+                    const nextLine = lines[i + 1];
+                    const commitHash = nextLine.split(' ')[0];
+                    return commitHash || null;
+                }
+            }
+        }
+        return null;
     }
 
-    rollbackToCommit(commitHash: string): string {
+    hardReset(commitHash: string): string {
         return this.exec(`git reset --hard ${commitHash}`);
     }
 }
